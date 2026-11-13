@@ -30,6 +30,7 @@ describe('GET /api/v1/products (HTTP, repositorio simulado)', () => {
     findVariantsByIds: jest.fn(),
     findMany: jest.fn().mockResolvedValue({ items: [product], total: 1, page: 1, limit: 24 }),
     findBySlug: jest.fn().mockResolvedValue(null),
+    findSitemapEntries: jest.fn().mockResolvedValue([]),
     findRelated: jest.fn(),
     getFilterOptions: jest.fn(),
   };

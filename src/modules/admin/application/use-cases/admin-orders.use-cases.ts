@@ -30,11 +30,11 @@ export class AdminOrdersUseCases {
   /** CSV para Excel: una fila por pedido. */
   toCsv(page: Page<Order>): string {
     const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    const head = ['Pedido', 'Fecha', 'Cliente', 'Correo', 'Estatus', 'Pago', 'Artículos', 'Subtotal', 'Envío', 'Total', 'Estado', 'CP', 'Guía'];
+    const head = ['Pedido', 'Fecha', 'Cliente', 'Correo', 'Estatus', 'Pago', 'Artículos', 'Subtotal', 'Envío', 'Total', 'Descuento', 'Cupón', 'Entrega', 'Estado', 'CP', 'Guía'];
     const rows = page.items.map((o) => [
       formatOrderNumber(o.number), o.createdAt.toISOString().slice(0, 16).replace('T', ' '), o.shippingAddress.fullName, o.email,
       o.status, o.paymentStatus, o.items.reduce((a, i) => a + i.quantity, 0), o.subtotal, o.shippingCost, o.total,
-      o.shippingAddress.state, o.shippingAddress.postalCode, o.trackingNumber ? `${o.trackingCarrier ?? ''} ${o.trackingNumber}`.trim() : '',
+      o.discount, o.couponCode ?? '', o.deliveryMethod === 'RECOGER' ? 'Recoger en tienda' : 'Domicilio', o.shippingAddress.state, o.shippingAddress.postalCode, o.trackingNumber ? `${o.trackingCarrier ?? ''} ${o.trackingNumber}`.trim() : '',
     ]);
     return '﻿' + [head, ...rows].map((r) => r.map(esc).join(',')).join('\r\n');
   }

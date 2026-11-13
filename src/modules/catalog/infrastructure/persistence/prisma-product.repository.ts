@@ -81,6 +81,14 @@ export class PrismaProductRepository implements ProductRepository {
     return row ? toProductDetail(row) : null;
   }
 
+  findSitemapEntries(): Promise<{ slug: string; updatedAt: Date }[]> {
+    return this.prisma.product.findMany({
+      where: { isActive: true },
+      select: { slug: true, updatedAt: true },
+      orderBy: { updatedAt: 'desc' },
+    });
+  }
+
   async findRelated(productId: string, categoryId: string, limit: number): Promise<ProductSummary[]> {
     const rows = await this.prisma.product.findMany({
       where: { isActive: true, categoryId, id: { not: productId } },

@@ -1,7 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { ArrayMaxSize, IsArray, IsInt, IsUUID, Max, Min, ValidateNested } from 'class-validator';
-import { MAX_QTY_PER_LINE } from '../../domain/cart';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
+import { ArrayMaxSize, IsArray, IsIn, IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min, ValidateNested } from 'class-validator';
+import { DELIVERY_METHODS, DeliveryMethod, MAX_QTY_PER_LINE } from '../../domain/cart';
 
 export class CartItemDto {
   @ApiProperty({ format: 'uuid' })
@@ -22,4 +22,16 @@ export class CartDto {
   @ValidateNested({ each: true })
   @Type(() => CartItemDto)
   items: CartItemDto[];
+
+  @ApiPropertyOptional({ enum: DELIVERY_METHODS, default: 'ENVIO', description: 'RECOGER = recoger en tienda, sin costo de envío' })
+  @IsOptional()
+  @IsIn(DELIVERY_METHODS)
+  deliveryMethod?: DeliveryMethod;
+
+  @ApiPropertyOptional({ example: 'BIENVENIDO10', description: 'Código de cupón; la respuesta dice si aplicó o por qué no' })
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @MaxLength(30)
+  couponCode?: string;
 }

@@ -1,5 +1,5 @@
 import { Page } from '@/shared/pagination/pagination';
-import { Order, OrderStatus, PaymentStatus, ShippingAddress } from '../entities/order.entity';
+import { DeliveryMethod, Order, OrderStatus, PaymentStatus, ShippingAddress } from '../entities/order.entity';
 
 export interface NewOrderItem {
   productId: string;
@@ -19,7 +19,11 @@ export interface NewOrder {
   subtotal: number;
   shippingCost: number;
   total: number;
+  discount: number;
+  couponId: string | null;
+  couponCode: string | null;
   shippingAddress: ShippingAddress;
+  deliveryMethod: DeliveryMethod;
   items: NewOrderItem[];
 }
 

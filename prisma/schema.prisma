@@ -15,6 +15,38 @@ enum Role {
   ADMIN
 }
 
+/// ENVIO = paquetería a domicilio; RECOGER = el cliente pasa a la tienda (sin costo de envío).
+enum DeliveryMethod {
+  ENVIO
+  RECOGER
+}
+
+/// PERCENT = % sobre el subtotal; FIXED = pesos sobre el subtotal; FREE_SHIPPING = envío a $0.
+enum CouponType {
+  PERCENT
+  FIXED
+  FREE_SHIPPING
+}
+
+model Coupon {
+  id          String     @id @default(uuid())
+  code        String     @unique
+  type        CouponType
+  /// Porcentaje (1-100) para PERCENT, pesos para FIXED; se ignora en FREE_SHIPPING.
+  value       Decimal    @default(0) @db.Decimal(10, 2)
+  minSubtotal Decimal?   @db.Decimal(10, 2)
+  startsAt    DateTime?
+  endsAt      DateTime?
+  maxUses     Int?
+  usedCount   Int        @default(0)
+  isActive    Boolean    @default(true)
+  orders      Order[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("coupons")
+}
+
 enum Gender {
   HOMBRE
   MUJER
@@ -187,8 +219,14 @@ model Order {
   subtotal        Decimal       @db.Decimal(10, 2)
   shippingCost    Decimal       @db.Decimal(10, 2)
   total           Decimal       @db.Decimal(10, 2)
+  /// Descuento aplicado al subtotal (ya restado en total). El cupón se copia por código por si luego se borra.
+  discount        Decimal       @default(0) @db.Decimal(10, 2)
+  couponId        String?
+  coupon          Coupon?       @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  couponCode      String?
   /// Copia de la dirección al momento de comprar (no cambia si el cliente edita su dirección).
   shippingAddress Json
+  deliveryMethod  DeliveryMethod @default(ENVIO)
   paymentProvider String        @default("mercadopago")
   paymentStatus   PaymentStatus @default(PENDING)
   mpPreferenceId  String?

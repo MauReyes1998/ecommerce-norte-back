@@ -8,6 +8,7 @@ describe('ListProductsUseCase', () => {
     findVariantsByIds: jest.fn(),
     findMany: jest.fn(),
     findBySlug: jest.fn(),
+    findSitemapEntries: jest.fn(),
     findRelated: jest.fn(),
     getFilterOptions: jest.fn(),
   };

@@ -9,6 +9,7 @@ import { PRODUCT_REPOSITORY, CartVariant } from '@/modules/catalog/domain/reposi
 import { USER_REPOSITORY } from '@/modules/auth/domain/repositories/user.repository';
 import { CATEGORY_REPOSITORY } from '@/modules/catalog/domain/repositories/category.repository';
 import { PrismaService } from '@/shared/prisma/prisma.service';
+import { COUPON_REPOSITORY } from '@/modules/coupons/domain/coupon.repository';
 import { PAYMENT_GATEWAY, PaymentGateway } from '../../domain/services/payment-gateway';
 import { NewOrder, ORDER_REPOSITORY, OrderRepository, OutOfStockError } from '../../domain/repositories/order.repository';
 import { Order } from '../../domain/entities/order.entity';
@@ -72,6 +73,7 @@ describe('Pedidos y pagos (HTTP, sin base de datos)', () => {
       .overrideProvider(CATEGORY_REPOSITORY).useValue({})
       .overrideProvider(USER_REPOSITORY).useValue({})
       .overrideProvider(PrismaService).useValue({})
+      .overrideProvider(COUPON_REPOSITORY).useValue({ findByCode: jest.fn().mockResolvedValue(null) })
       .overrideProvider(ORDER_REPOSITORY).useValue(repo)
       .overrideProvider(PAYMENT_GATEWAY).useValue(gateway)
       .compile();

@@ -22,7 +22,10 @@ function toOrder(row: Row): Order {
     subtotal: toMoney(row.subtotal) as number,
     shippingCost: toMoney(row.shippingCost) as number,
     total: toMoney(row.total) as number,
+    discount: toMoney(row.discount) as number,
+    couponCode: row.couponCode,
     shippingAddress: row.shippingAddress as unknown as ShippingAddress,
+    deliveryMethod: row.deliveryMethod,
     paymentProvider: row.paymentProvider,
     paymentStatus: row.paymentStatus,
     mpPreferenceId: row.mpPreferenceId,
@@ -55,6 +58,10 @@ export class PrismaOrderRepository implements OrderRepository {
         });
         if (result.count === 0) throw new OutOfStockError(item.sku);
       }
+      // El uso del cupón se cuenta en la misma transacción que el pedido.
+      if (order.couponId) {
+        await tx.coupon.update({ where: { id: order.couponId }, data: { usedCount: { increment: 1 } } });
+      }
       return tx.order.create({
         data: {
           userId: order.userId,
@@ -62,7 +69,11 @@ export class PrismaOrderRepository implements OrderRepository {
           subtotal: order.subtotal,
           shippingCost: order.shippingCost,
           total: order.total,
+          discount: order.discount,
+          couponId: order.couponId,
+          couponCode: order.couponCode,
           shippingAddress: order.shippingAddress as unknown as Prisma.InputJsonValue,
+          deliveryMethod: order.deliveryMethod,
           items: { create: order.items },
           history: { create: { toStatus: 'PENDIENTE', actor: 'sistema', note: 'Pedido creado' } },
         },

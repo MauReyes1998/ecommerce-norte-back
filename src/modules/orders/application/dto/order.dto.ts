@@ -1,10 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
-  ArrayMaxSize, ArrayMinSize, IsArray, IsEmail, IsIn, IsOptional, IsString, Matches, MaxLength, MinLength,
-  ValidateNested,
+  ArrayMaxSize, ArrayMinSize, IsArray, IsDefined, IsEmail, IsIn, IsOptional, IsString, Matches, MaxLength, MinLength,
+  ValidateIf, ValidateNested,
 } from 'class-validator';
 import { CartItemDto } from '@/modules/cart/application/dto/cart.dto';
+import { DELIVERY_METHODS, DeliveryMethod } from '@/modules/cart/domain/cart';
 import { PaginationQuery } from '@/shared/pagination/pagination';
 import { OrderStatus } from '../../domain/entities/order.entity';
 
@@ -30,14 +31,36 @@ export class ShippingAddressDto {
   @ApiPropertyOptional({ example: 'Casa blanca, portón negro' }) @IsOptional() @Transform(trim) @IsString() @MaxLength(200) references?: string;
 }
 
+/** Quién pasa a recoger el pedido a la tienda. */
+export class PickupContactDto {
+  @ApiProperty({ example: 'Ana López' }) @Transform(trim) @IsString() @MinLength(3) @MaxLength(80) fullName: string;
+  @ApiProperty({ example: '7221234567' }) @Transform(trim) @Matches(/^\d{10}$/, { message: 'Teléfono de 10 dígitos' }) phone: string;
+}
+
 export class CreateOrderDto {
   @ApiProperty({ type: [CartItemDto] })
   @IsArray() @ArrayMinSize(1) @ArrayMaxSize(50) @ValidateNested({ each: true }) @Type(() => CartItemDto)
   items: CartItemDto[];
 
-  @ApiProperty({ type: ShippingAddressDto })
+  @ApiPropertyOptional({ enum: DELIVERY_METHODS, default: 'ENVIO', description: 'RECOGER = recoger en tienda (envío gratis)' })
+  @IsOptional() @IsIn(DELIVERY_METHODS)
+  deliveryMethod?: DeliveryMethod;
+
+  @ApiPropertyOptional({ example: 'BIENVENIDO10', description: 'Cupón a aplicar; si no es válido el pedido se rechaza con 409' })
+  @IsOptional() @Transform(trim) @IsString() @MaxLength(30)
+  couponCode?: string;
+
+  @ApiPropertyOptional({ type: ShippingAddressDto, description: 'Obligatoria cuando deliveryMethod es ENVIO (o se omite)' })
+  @ValidateIf((o: CreateOrderDto) => o.deliveryMethod !== 'RECOGER')
+  @IsDefined({ message: 'Indica la dirección de envío' })
   @ValidateNested() @Type(() => ShippingAddressDto)
-  shippingAddress: ShippingAddressDto;
+  shippingAddress?: ShippingAddressDto;
+
+  @ApiPropertyOptional({ type: PickupContactDto, description: 'Obligatorio cuando deliveryMethod es RECOGER' })
+  @ValidateIf((o: CreateOrderDto) => o.deliveryMethod === 'RECOGER')
+  @IsDefined({ message: 'Indica quién recogerá el pedido' })
+  @ValidateNested() @Type(() => PickupContactDto)
+  pickupContact?: PickupContactDto;
 
   @ApiPropertyOptional({ description: 'Obligatorio si compra como invitado', example: 'ana@correo.com' })
   @IsOptional() @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))

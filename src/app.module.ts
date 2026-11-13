@@ -12,6 +12,7 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { AccountModule } from './modules/account/account.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { CouponsModule } from './modules/coupons/coupons.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AdminModule } from './modules/admin/admin.module';
     NotificationsModule,
     CatalogModule,
     AuthModule,
+    CouponsModule,
     CartModule,
     OrdersModule,
     PaymentsModule,

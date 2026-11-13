@@ -6,6 +6,7 @@ import request from 'supertest';
 import { setupApp } from '@/setup-app';
 import { AdminModule } from '../../admin.module';
 import { PrismaService } from '@/shared/prisma/prisma.service';
+import { COUPON_REPOSITORY } from '@/modules/coupons/domain/coupon.repository';
 import { USER_REPOSITORY } from '@/modules/auth/domain/repositories/user.repository';
 import { ORDER_REPOSITORY } from '@/modules/orders/domain/repositories/order.repository';
 import { PAYMENT_GATEWAY } from '@/modules/orders/domain/services/payment-gateway';
@@ -26,6 +27,7 @@ describe('Admin (permisos y validaciones)', () => {
       imports: [ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: true }), AdminModule],
     })
       .overrideProvider(PrismaService).useValue({})
+      .overrideProvider(COUPON_REPOSITORY).useValue({})
       .overrideProvider(USER_REPOSITORY).useValue({})
       .overrideProvider(ORDER_REPOSITORY).useValue(orders)
       .overrideProvider(PAYMENT_GATEWAY).useValue({})

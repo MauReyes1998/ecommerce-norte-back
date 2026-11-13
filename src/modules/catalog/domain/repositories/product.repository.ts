@@ -40,6 +40,8 @@ export interface ProductRepository {
   findVariantsByIds(variantIds: string[]): Promise<CartVariant[]>;
   findMany(filters: ProductFilters, sort: ProductSort, page: number, limit: number): Promise<Page<ProductSummary>>;
   findBySlug(slug: string): Promise<ProductDetail | null>;
+  /** Slugs de productos activos para el sitemap. */
+  findSitemapEntries(): Promise<{ slug: string; updatedAt: Date }[]>;
   findRelated(productId: string, categoryId: string, limit: number): Promise<ProductSummary[]>;
   getFilterOptions(filters: Pick<ProductFilters, 'categorySlug' | 'gender'>): Promise<FilterOptions>;
 }

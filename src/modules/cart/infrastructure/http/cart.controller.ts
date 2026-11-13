@@ -12,6 +12,6 @@ export class CartController {
   @HttpCode(200)
   @ApiOperation({ summary: 'Recalcula el carrito con precios y stock reales; marca líneas con problemas' })
   quote(@Body() dto: CartDto) {
-    return this.quoteCart.execute(dto.items);
+    return this.quoteCart.execute(dto.items, { delivery: dto.deliveryMethod, couponCode: dto.couponCode });
   }
 }

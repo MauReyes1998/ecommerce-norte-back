@@ -8,6 +8,7 @@ function itemsTable(order: Order) {
   const rows = order.items.map((i) => `<tr><td style="padding:6px 0">${esc(i.productName)}<br><span style="color:#777;font-size:12px">${esc(i.size)} · ${esc(i.color)} · ${i.quantity} × ${mxn(i.unitPrice)}</span></td><td style="text-align:right;vertical-align:top;padding:6px 0">${mxn(i.lineTotal)}</td></tr>`).join('');
   return `<table style="width:100%;border-collapse:collapse;font-size:14px">${rows}
   <tr><td style="padding-top:10px;border-top:1px solid #eee">Subtotal</td><td style="text-align:right;padding-top:10px;border-top:1px solid #eee">${mxn(order.subtotal)}</td></tr>
+  ${order.discount > 0 ? `<tr><td>Descuento${order.couponCode ? ` (${order.couponCode})` : ''}</td><td style="text-align:right">-${mxn(order.discount)}</td></tr>` : ''}
   <tr><td>Envío</td><td style="text-align:right">${order.shippingCost === 0 ? 'Gratis' : mxn(order.shippingCost)}</td></tr>
   <tr><td style="font-weight:bold;padding-top:6px">Total</td><td style="text-align:right;font-weight:bold;padding-top:6px">${mxn(order.total)}</td></tr></table>`;
 }
