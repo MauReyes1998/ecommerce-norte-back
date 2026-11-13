@@ -3,3 +3,9 @@ dist
 .env
 coverage
 *.tsbuildinfo
+
+# Imágenes subidas desde el admin y secretos de Docker
+uploads/
+.env.*
+!.env.example
+!.env.docker.example
