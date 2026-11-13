@@ -1,7 +1,8 @@
 import {
-  Body, Controller, Delete, Get, Header, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, UploadedFiles, UseGuards,
+  Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, Res, UploadedFiles, UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { AuthUser, CurrentUser } from '@/shared/auth/current-user';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -21,6 +22,7 @@ import { AdminOrdersUseCases } from '../../application/use-cases/admin-orders.us
 import { AdminProductsUseCases } from '../../application/use-cases/admin-products.use-cases';
 import { AdminCategoriesUseCases } from '../../application/use-cases/admin-categories.use-cases';
 import { DashboardUseCase } from '../../application/use-cases/dashboard.use-case';
+import { ReportsUseCase } from '../../application/use-cases/reports.use-case';
 import { productImageMulterOptions, UPLOADS_DIR } from './upload.config';
 
 @ApiTags('Admin')
@@ -36,6 +38,7 @@ export class AdminController {
     private readonly listOrders: ListOrdersUseCase,
     private readonly updateOrderStatus: UpdateOrderStatusUseCase,
     private readonly adminOrders: AdminOrdersUseCases,
+    private readonly reports: ReportsUseCase,
   ) {}
 
   // ---- Dashboard ----
@@ -43,6 +46,15 @@ export class AdminController {
   @ApiOperation({ summary: 'KPIs del rango (7/30/90 días), más vendidos, categorías, stock bajo y ventas por día' })
   stats(@Query() q: DashboardQuery) {
     return this.dashboard.execute(q.range);
+  }
+
+  @Get('reports/:type.csv')
+  @ApiOperation({ summary: 'Reporte de ventas en CSV: dias, productos o categorias, para el rango del dashboard' })
+  async report(@Param('type') type: string, @Query() q: DashboardQuery, @Res() res: Response) {
+    const { filename, content } = await this.reports.csv(type, q.range ?? 30);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(content);
   }
 
   // ---- Productos ----
@@ -148,12 +160,13 @@ export class AdminController {
   }
 
   @Get('orders/export.csv')
-  @Header('Content-Type', 'text/csv; charset=utf-8')
-  @Header('Content-Disposition', 'attachment; filename="pedidos.csv"')
   @ApiOperation({ summary: 'Exportar pedidos filtrados a CSV (hasta 1000)' })
-  async exportOrders(@Query() query: ListOrdersQuery) {
+  async exportOrders(@Query() query: ListOrdersQuery, @Res() res: Response) {
     const page = await this.listOrders.execute({ ...query, page: 1, limit: 1000 });
-    return this.adminOrders.toCsv(page);
+    // Se responde directo con @Res para que el ResponseInterceptor no envuelva el CSV en { data }.
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="pedidos.csv"');
+    res.send(this.adminOrders.toCsv(page));
   }
 
   @Get('orders/:id')

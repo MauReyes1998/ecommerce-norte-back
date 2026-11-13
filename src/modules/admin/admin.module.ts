@@ -9,6 +9,9 @@ import { AdminProductsUseCases } from './application/use-cases/admin-products.us
 import { AdminCategoriesUseCases } from './application/use-cases/admin-categories.use-cases';
 import { DashboardUseCase } from './application/use-cases/dashboard.use-case';
 import { AdminOrdersUseCases } from './application/use-cases/admin-orders.use-cases';
+import { REPORTS_REPOSITORY } from './domain/reports.repository';
+import { PrismaReportsRepository } from './infrastructure/persistence/prisma-reports.repository';
+import { ReportsUseCase } from './application/use-cases/reports.use-case';
 import { AdminController } from './infrastructure/http/admin.controller';
 
 @Module({
@@ -19,10 +22,12 @@ import { AdminController } from './infrastructure/http/admin.controller';
     { provide: ADMIN_CATEGORY_REPOSITORY, useClass: PrismaAdminCategoryRepository },
     { provide: DASHBOARD_REPOSITORY, useClass: PrismaDashboardRepository },
     { provide: ADMIN_CUSTOMER_REPOSITORY, useClass: PrismaAdminCustomerRepository },
+    { provide: REPORTS_REPOSITORY, useClass: PrismaReportsRepository },
     AdminProductsUseCases,
     AdminCategoriesUseCases,
     DashboardUseCase,
     AdminOrdersUseCases,
+    ReportsUseCase,
   ],
 })
 export class AdminModule {}
