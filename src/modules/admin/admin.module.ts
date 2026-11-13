@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { OrdersModule } from '@/modules/orders/orders.module';
+import { StockAlertsModule } from '@/modules/stock-alerts/stock-alerts.module';
 import { ADMIN_CATEGORY_REPOSITORY, ADMIN_CUSTOMER_REPOSITORY, ADMIN_PRODUCT_REPOSITORY, DASHBOARD_REPOSITORY } from './domain/admin.repository';
 import {
   PrismaAdminCategoryRepository, PrismaAdminCustomerRepository, PrismaAdminProductRepository, PrismaDashboardRepository,
@@ -15,7 +16,7 @@ import { ReportsUseCase } from './application/use-cases/reports.use-case';
 import { AdminController } from './infrastructure/http/admin.controller';
 
 @Module({
-  imports: [AuthModule, OrdersModule],
+  imports: [AuthModule, OrdersModule, StockAlertsModule],
   controllers: [AdminController],
   providers: [
     { provide: ADMIN_PRODUCT_REPOSITORY, useClass: PrismaAdminProductRepository },

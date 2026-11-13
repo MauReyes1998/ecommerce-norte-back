@@ -1,3 +1,4 @@
+import { StockAlertsUseCases } from '@/modules/stock-alerts/application/stock-alerts.use-cases';
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { slugify } from '@/shared/utils/slug';
 import { CreateProductDto, ListAdminProductsQuery, UpdateProductDto } from '../dto/admin.dto';
@@ -5,7 +6,10 @@ import { ADMIN_PRODUCT_REPOSITORY, AdminProductRepository } from '../../domain/a
 
 @Injectable()
 export class AdminProductsUseCases {
-  constructor(@Inject(ADMIN_PRODUCT_REPOSITORY) private readonly products: AdminProductRepository) {}
+  constructor(
+    @Inject(ADMIN_PRODUCT_REPOSITORY) private readonly products: AdminProductRepository,
+    private readonly stockAlerts: StockAlertsUseCases,
+  ) {}
 
   list(query: ListAdminProductsQuery) {
     const { page, limit, ...filters } = query;
@@ -42,8 +46,11 @@ export class AdminProductsUseCases {
     return this.products.duplicate(id, `${src.name} (copia)`, slug);
   }
 
-  setVariantStock(variantId: string, stock: number) {
-    return this.products.setVariantStock(variantId, stock);
+  async setVariantStock(variantId: string, stock: number) {
+    const result = await this.products.setVariantStock(variantId, stock);
+    // Si alguien pidió aviso de esta talla, se le escribe (no bloquea la respuesta).
+    if (stock > 0) void this.stockAlerts.notifyBackInStock();
+    return result;
   }
 
   async update(id: string, dto: UpdateProductDto) {
@@ -56,7 +63,9 @@ export class AdminProductsUseCases {
       throw new ConflictException(`Ya existe un producto con el slug "${dto.slug}"`);
     }
     const { variants, ...rest } = dto;
-    return this.products.update(id, { ...rest, salePrice }, variants);
+    const updated = await this.products.update(id, { ...rest, salePrice }, variants);
+    if (variants) void this.stockAlerts.notifyBackInStock();
+    return updated;
   }
 
   async deactivate(id: string) {
