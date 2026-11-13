@@ -13,6 +13,8 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { AccountModule } from './modules/account/account.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { CouponsModule } from './modules/coupons/coupons.module';
+import { StockAlertsModule } from './modules/stock-alerts/stock-alerts.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { CouponsModule } from './modules/coupons/coupons.module';
     OrdersModule,
     PaymentsModule,
     AccountModule,
+    StockAlertsModule,
+    ReviewsModule,
     AdminModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
